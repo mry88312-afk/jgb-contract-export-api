@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+requests
+curl_cffi
+python-dotenv
+pandas
+openpyxl
