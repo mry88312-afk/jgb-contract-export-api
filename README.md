@@ -60,6 +60,7 @@
 | `date_type` | `string` | 日期類型（`start` 起始日、`end` 終止日、`finish_sign` 簽署完成日） | `"start"` |
 | `keyword_for` | `string` | 關鍵字對象（`id` JGBID、`tenant` 租客、`estateName` 案名、`phone` 手機、`email` 信箱） | `"estateName"` |
 | `keyword` | `string` | 查詢的關鍵字 | `""` |
+| `contract_list_status` | `string` | 合約狀態條件（例如：`active` 生效中、`terminate` 已終止、`checkout` 已點交、`deposit_finished` 已結清） | `""` |
 
 **範例 Request Payload**：
 ```json
@@ -68,7 +69,8 @@
   "end_date": "2026/04/03",
   "date_type": "finish_sign",
   "keyword_for": "tenant",
-  "keyword": "76962"
+  "keyword": "76962",
+  "contract_list_status": "active"
 }
 ```
 

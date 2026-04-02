@@ -52,6 +52,7 @@ class ExportContractRequest(BaseModel):
     # 可選: id(JGBID)、tenant(租客)、estateName(案名)、phone(手機)、email(信箱)
     keyword_for: Optional[str] = "estateName"
     keyword: Optional[str] = ""
+    contract_list_status: Optional[str] = ""
 
 def get_browser_session():
     """取得具備 Chrome 特徵的 Session 以避開 WAF"""
@@ -256,6 +257,7 @@ def export_contracts(request: ExportContractRequest):
     list_params = {
         'contractPeriodQuery': date_type,
         'contractPeriodRange[]': [request.start_date, request.end_date],
+        'contract_list_status': request.contract_list_status or '',
         'keyword_for': request.keyword_for or 'estateName',
         'keyword': request.keyword or '',
         'page': '1',
@@ -290,6 +292,7 @@ def export_contracts(request: ExportContractRequest):
         'searchOptions[keyword_for]': request.keyword_for or 'estateName',
         'searchOptions[keyword]': request.keyword or '',
         'searchOptions[contractPeriodQuery]': date_type,
+        'searchOptions[contract_list_status]': request.contract_list_status or '',
         'searchOptions[page]': '1',
         'searchOptions[contractPeriodRange][0]': request.start_date,
         'searchOptions[contractPeriodRange][1]': request.end_date,
