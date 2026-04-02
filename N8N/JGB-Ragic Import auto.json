@@ -1,0 +1,1931 @@
+{
+  "name": "JGB-Ragic Import auto",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1088,
+        2480
+      ],
+      "id": "c24fba3a-74d1-4e4b-a7db-6e23409c80c8",
+      "name": "Loop Over Items",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        4288,
+        2336
+      ],
+      "id": "41722047-e22a-47ed-aded-e5ec40f64e11"
+    },
+    {
+      "parameters": {
+        "content": "## 資料清洗步驟 \n**Double click** to edit me. [Guide](https://docs.n8n.io/workflows/sticky-notes/)",
+        "height": 384,
+        "width": 416,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1472,
+        2608
+      ],
+      "id": "dab691cb-b271-4181-a98c-8ce20ac1d945",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "Wn9lyjPzL4Zupkek",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/Wn9lyjPzL4Zupkek",
+          "cachedResultName": "資料清洗"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        -1312,
+        2832
+      ],
+      "name": "資料清洗",
+      "id": "1ac12eb0-5103-4b3f-a3d8-c5c30f6ad5f3",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "form": "OnePlaceLiving/for-system-use/10",
+        "limit": 1,
+        "filters": {
+          "filter_map": [
+            {
+              "filters_field": "1007543",
+              "filters_value": "={{ $('Loop Over Items').item.json[\"jgb合約id\"] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-ragic.ragic",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        2256
+      ],
+      "id": "106ad351-c45b-47ce-84ba-6c9726aafafc",
+      "name": "確認合約版本",
+      "alwaysOutputData": true,
+      "notesInFlow": false,
+      "credentials": {
+        "ragicApi": {
+          "id": "LQmecGtg3MKWpEJf",
+          "name": "Ragic account 3"
+        }
+      },
+      "onError": "continueErrorOutput",
+      "notes": "for-system-use/10"
+    },
+    {
+      "parameters": {
+        "form": "OnePlaceLiving/for-system-use/2",
+        "limit": 1,
+        "filters": {
+          "filter_map": [
+            {
+              "filters_field": "1007373",
+              "filters_value": "={{ $('Loop Over Items').item.json['承租方'] }}"
+            },
+            {
+              "filters_field": "1007372",
+              "filters_value": "={{ $('Loop Over Items').item.json['主承租人電話'] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-ragic.ragic",
+      "typeVersion": 1,
+      "position": [
+        32,
+        1776
+      ],
+      "id": "0550a6ab-cff5-4730-a396-4afc315e0b72",
+      "name": "房客姓名",
+      "notesInFlow": false,
+      "credentials": {
+        "ragicApi": {
+          "id": "LQmecGtg3MKWpEJf",
+          "name": "Ragic account 3"
+        }
+      },
+      "notes": "for-system-use/2/"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e65ca213-fa6e-4ffa-92e5-68548c0ee1ee",
+              "leftValue": "={{ Object.values($('確認合約版本').first().json)[0][\"已更新\"] }}",
+              "rightValue": "Yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "38f0d5a2-274b-4e80-b8e2-0efc94b5fffc",
+              "leftValue": "=",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -416,
+        2256
+      ],
+      "id": "15013b3d-abce-4a64-ba1d-cc8ca9a2ff2a",
+      "name": "已更新至最新版本"
+    },
+    {
+      "parameters": {
+        "action": "createNewData",
+        "form": "OnePlaceLiving/for-system-use/2",
+        "jsonBody": "={\n  \"1007372\": \"{{ $('Loop Over Items').item.json['主承租人電話'] }}\",\n  \"1008189\": \"{{ $('Loop Over Items').item.json['房客2電話'] }}\",\n  \"1007373\": \"{{ $('Loop Over Items').item.json['承租方'] }}\",\n  \"1008188\": \"{{ $('Loop Over Items').item.json['房客2'] }}\",\n  \"1007376\": \"{{ $('Loop Over Items').item.json['性別'] }}\",\n  \"1007542\": \"{{ $('Loop Over Items').item.json.email }}\",\n  \"1007379\": \"{{ $('Loop Over Items').item.json['緊急聯絡人']}}\",\n  \"1007381\": \"{{ $('Loop Over Items').item.json['緊急電話'] }}\",\n  \"1007380\": \"{{ $('Loop Over Items').item.json['緊急聯絡人關係'] }}\",\n  \"1013892\": \"{{ $('Loop Over Items').item.json['通訊地址'] }}\",\n  \"1007378\": \"{{ $('Loop Over Items').item.json['戶籍地址'] }}\",\n  \"1007374\": \"{{ $('Loop Over Items').item.json['身分證字號'] }}\",\n  \"1021727\": \"{{ $now }}\"\n}"
+      },
+      "type": "n8n-nodes-ragic.ragic",
+      "typeVersion": 1,
+      "position": [
+        704,
+        1920
+      ],
+      "id": "51bcc4b5-47d9-4dce-8505-83e35a087376",
+      "name": "新增租客資料",
+      "credentials": {
+        "ragicApi": {
+          "id": "LQmecGtg3MKWpEJf",
+          "name": "Ragic account 3"
+        }
+      },
+      "notes": "\n    //聯絡電話1\n    //房客姓名1\n    //性別\n    //email\n    //緊急連絡人姓名1\n    //緊急連絡人電話1\n    //緊急連絡人地址\n    //戶籍地址\n    //身分證字號"
+    },
+    {
+      "parameters": {
+        "action": "createNewData",
+        "form": "OnePlaceLiving/for-system-use/10",
+        "jsonBody": "={\n  \"1007543\": \"{{ $('Loop Over Items').item.json['jgb合約id'] }}\",\n  \"1007552\": \"{{ $('Loop Over Items').item.json['第__室'] }}\",\n  \"1008219\": \"{{ $('Loop Over Items').item.json['來源案場編號'] }}\",\n  \"1007367\": \"{{ $('Loop Over Items').item.json['起租日'] }}\",\n  \"1007368\": \"{{ $('Loop Over Items').item.json['到期日'] }}\",\n  \"1009173\": \"{{ $('Loop Over Items').item.json['簽約日'] }}\",\n  \"1009188\": \"{{ $('Loop Over Items').item.json['租賃面積'] }}\",\n  \"1013356\": \"{{ $('Loop Over Items').item.json['主承租人電話'] }}\",\n  \"1007361\": \"{{ $('Loop Over Items').item.json['主承租人電話'] }}\",\n  \"1007365\": \"{{ $('Loop Over Items').item.json['租金'] }}\",\n  \"1007779\": \"{{ $('Loop Over Items').item.json['押金'] }}\",\n  \"1008187\": \"{{ $('Loop Over Items').item.json['簽約人'] }}\",\n  \"1007366\": \"{{ $('Loop Over Items').item.json['繳交方式'] }}\",\n  \"1008197\": \"{{ $('Loop Over Items').item.json['房客2電話'] ? $('Loop Over Items').item.json['房客2電話'] : '' }}\",\n  \"1008198\": \"{{ $('Loop Over Items').item.json['房客2'] }}\",\n  \"1009189\": \"{{ $('Loop Over Items').item.json['房客2身分證字號'] }}\",\n  \"1014734\": \"{{ $('是否有資料更新').item.json.prevContractId ||\"\" }}\",\n\n  \"1019665\": \"{{ $now }}\"\n\n}\n"
+      },
+      "type": "n8n-nodes-ragic.ragic",
+      "typeVersion": 1,
+      "position": [
+        1824,
+        2112
+      ],
+      "id": "bbf10018-9a2d-4104-af7f-1f0af6e04747",
+      "name": "新增合約",
+      "credentials": {
+        "ragicApi": {
+          "id": "LQmecGtg3MKWpEJf",
+          "name": "Ragic account 3"
+        }
+      },
+      "notes": "    //JGBid  \n    //房間編號(可多選)  \n    //房間編號(顯示地址用) \n    //案場編號(一定要有數字)\n    //合約開始日\n    //合約到期日\n    //簽約日\n    //租賃面積\n    //在此登打電話(必填)\n    //租金\n    //押金\n    //簽約經理人\n    //已更新\n"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e65ca213-fa6e-4ffa-92e5-68548c0ee1ee",
+              "leftValue": "={{ Object.keys($json).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        256,
+        1920
+      ],
+      "id": "fa9de667-6807-4a37-9fe6-b591c34e8cbc",
+      "name": "舊租客"
+    },
+    {
+      "parameters": {
+        "form": "OnePlaceLiving/for-system-use/2",
+        "limit": 1,
+        "filters": {
+          "filter_map": [
+            {
+              "filters_field": "1007372",
+              "filters_value": "={{ $('Loop Over Items').item.json['主承租人電話'] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-ragic.ragic",
+      "typeVersion": 1,
+      "position": [
+        32,
+        2112
+      ],
+      "id": "0f7c2644-dbc7-4f78-af2d-068e2dc8d04c",
+      "name": "房客電話",
+      "notesInFlow": false,
+      "credentials": {
+        "ragicApi": {
+          "id": "LQmecGtg3MKWpEJf",
+          "name": "Ragic account 3"
+        }
+      },
+      "notes": "for-system-use/2/"
+    },
+    {
+      "parameters": {
+        "action": "createNewData",
+        "form": "OnePlaceLiving/for-system-use/37",
+        "jsonBody": "={\n  \"1021098\": \"{{ $('Loop Over Items').item.json['jgb合約id'] }}\",  \n  \"1021102\": \"{{ $('Loop Over Items').item.json['合約更新日'] }}\",\n  \"1021092\": \"{{ $('Loop Over Items').item.json['簽約人'] }}\",\n  \"1020953\": \"{{ $('Loop Over Items').item.json['主承租人電話'] }}{{ $('Loop Over Items').item.json['房客2電話'] }}\",  \n  \"1020954\": \"{{ $('Loop Over Items').item.json['原始姓名資料'] }}\",\n  \"1021090\": \"{{ $('Loop Over Items').item.json['租金'] }}\",\n  \"1020969\": \"{{ $('Loop Over Items').item.json['身分證字號'] }}{{ $('Loop Over Items').item.json['房客2身分證字號'] ? '/ ' + $('Loop Over Items').item.json['房客2身分證字號'] : '' }}\",\n  \"1020959\": \"{{ $('Loop Over Items').item.json['承租方'] }}\",\n  \"1021091\": \"{{ $('Loop Over Items').item.json['押金'] }}\",\n  \"1020955\": \"{{ $('Loop Over Items').item.json['性別'] }}\",\n  \"1021103\": \"{{ $('Loop Over Items').item.json['繳交方式'] }}\",\n  \"1020961\": \"{{ $('Loop Over Items').item.json.email }}\",\n  \"1020962\": \"{{ $('Loop Over Items').item.json['緊急聯絡人']}}\",\n  \"1020963\": \"{{ $('Loop Over Items').item.json['緊急電話'] }}\",\n  \"1021093\": \"{{ $('Loop Over Items').item.json['起租日'] }}\",\n  \"1020964\": \"{{ $('Loop Over Items').item.json['緊急聯絡人關係'] }}\",\n  \"1021096\": \"{{ $('Loop Over Items').item.json['關係人原始值'] }}\",\n  \"1021094\": \"{{ $('Loop Over Items').item.json['到期日'] }}\",\n  \"1021097\": \"{{ $('Loop Over Items').item.json['租賃面積'] }}\",\n  \"1021099\": \"{{ $('Loop Over Items').item.json['來源案場編號']||$('Loop Over Items').item.json['案名'] }}\",\n  \"1021095\": \"{{ $('Loop Over Items').item.json['簽約日'] }}\",  \n  \"1020974\": \"{{ $('Loop Over Items').item.json['戶籍地址'] }}\",\n  \"1021100\": \"{{ $('Loop Over Items').item.json['第__室'] }}\",\n  \"1020965\": \"{{ $('Loop Over Items').item.json['通訊地址'] }}\",\n  \"1020995\": \"{{ $('Loop Over Items').item.json['備註'] }}\",\n  \"1020957\": \"{{ $now }}\"\n}"
+      },
+      "type": "n8n-nodes-ragic.ragic",
+      "typeVersion": 1,
+      "position": [
+        4064,
+        2400
+      ],
+      "id": "74314a25-be16-49d4-ab91-1c10dfeb2440",
+      "name": "新增異常區資訊",
+      "credentials": {
+        "ragicApi": {
+          "id": "LQmecGtg3MKWpEJf",
+          "name": "Ragic account 3"
+        }
+      },
+      "notes": "\n    //聯絡電話1\n    //房客姓名1\n    //性別\n    //email\n    //緊急連絡人姓名1\n    //緊急連絡人電話1\n    //緊急連絡人地址\n    //戶籍地址\n    //身分證字號"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1536,
+        2912
+      ],
+      "id": "0058c5a2-af99-4ee0-ba78-ba0a64ae4cd6",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "form": "OnePlaceLiving/for-system-use/10",
+        "limit": 1,
+        "filters": {
+          "filter_map": [
+            {
+              "filters_field": "1007543",
+              "filters_value": "={{ $('Loop Over Items').item.json[\"jgb合約id\"] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-ragic.ragic",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        1728
+      ],
+      "id": "1afd1433-43d6-4f8d-9ae7-248a0e6e4b62",
+      "name": "JGBid checking",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "credentials": {
+        "ragicApi": {
+          "id": "LQmecGtg3MKWpEJf",
+          "name": "Ragic account 3"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "for-system-use/10"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e65ca213-fa6e-4ffa-92e5-68548c0ee1ee",
+              "leftValue": "={{ Object.keys($json).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1600,
+        1728
+      ],
+      "id": "a9249085-76c8-42db-9d88-be2dbe65a30a",
+      "name": "存在合約"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f15f4969-206b-4b8f-8629-6b28f676f7d9",
+              "leftValue": "={{ Object.values($('JGBid double check').first().json)[0][\"案場編號(一定要有數字)\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "ba1b42a1-8d24-4a8b-9c50-442f6c4952e2",
+              "leftValue": "={{ Object.values($('JGBid double check').first().json)[0][\"合約開始日\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "87a676c4-9d1c-4289-a8ab-20ea3abf8d8a",
+              "leftValue": "={{ Object.values($('JGBid double check').first().json)[0][\"租客手機1\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "259973c1-3343-496a-b6d4-23c6247624e2",
+              "leftValue": "={{ Object.values($('JGBid double check').first().json)[0][\"緊急聯絡人關係1\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "a784cf7f-6b3d-4acc-9109-9af281bbfed0",
+              "leftValue": "={{ Object.values($('JGBid double check').first().json)[0][\"緊急聯絡人關係1\"] }}",
+              "rightValue": "待修正",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "efdef9a3-8bea-4ecf-8166-fc56ef858523",
+              "leftValue": "={{ Object.values($('JGBid double check').first().json)[0][\"身分證字號right_idN\"] }}",
+              "rightValue": "XX00000000",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3616,
+        1808
+      ],
+      "id": "de8acc5c-3fa3-4a88-987a-c0c58e1c7b45",
+      "name": "資料齊全"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 3,
+              "triggerAtMinute": 42
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1536,
+        2720
+      ],
+      "id": "1a9d6be3-3c2d-445e-a185-d3381c06f46b",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "46347cae-564b-4275-9e8f-aafe90cc4488",
+              "leftValue": "={{ $('Loop Over Items').item.json[\"姓名異常\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -192,
+        1920
+      ],
+      "id": "4a23e752-f790-41e2-a1e8-59ab892d430c",
+      "name": "姓名無異常"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a953b256-7413-4d7c-bbe6-d84b6c3f972e",
+              "leftValue": "={{ $('Loop Over Items').item.json[\"異常\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3840,
+        2400
+      ],
+      "id": "096695e0-6389-4451-ad2a-f920cc11ac0b",
+      "name": "異常值"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 取得當前輸入\nconst item = $input.item.json;\n\n// 預設輸出物件\nlet data = {};\n\n// --- Case 1️⃣：新建立成功（有 status / data 結構） ---\nif (item.status && item.data) {\n  data = item.data;\n\n// --- Case 2️⃣：查詢現有資料（Ragic 回傳 { \"67\": {...} }） ---\n} else {\n  // 找出第一個 key（例如 \"67\"）\n  const key = Object.keys(item)[0];\n  const inner = item[key];\n\n  // 如果該 key 的值確實是物件，代表是查詢資料\n  if (inner && typeof inner === 'object') {\n    data = inner;\n  } else {\n    throw new Error('❌ 無法辨識輸入格式，請檢查 Ragic 回傳內容');\n  }\n}\n\n// === 統一回傳格式 ===\nreturn data;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1536,
+        1312
+      ],
+      "id": "0ad6531f-adc5-4fb5-bf87-b4eec7589419",
+      "name": "格式化_降解",
+      "retryOnFail": false,
+      "notesInFlow": true,
+      "disabled": true,
+      "onError": "continueRegularOutput",
+      "notes": "移除Ragic id"
+    },
+    {
+      "parameters": {
+        "action": "updateExistedData",
+        "form": "OnePlaceLiving/for-system-use/25",
+        "recordIndex": "={{ $json._ragicId }}",
+        "jsonBody": "={\n  \"1020357\": \"{{ $('Loop Over Items').item.json['房客2電話'] ? $('Loop Over Items').item.json['房客2電話'] : (($('格式化_降解').item.json['連絡電話1'] !== $('Loop Over Items').item.json['主承租人電話'] && (!$json['緊急連絡人姓名2'] || $json['緊急連絡人姓名2'] === '')) ? $('Loop Over Items').item.json['主承租人電話'] : '') }}\",\n  \"1020354\": \"{{ ($('格式化_降解').item.json['房客姓名1'] || '') !== ($('Loop Over Items').item.json['承租方'] || '') ? $('Loop Over Items').item.json['承租方'] : $('格式化_降解').item.json['房客姓名1'] }}\",\n  \"1020358\": \"{{ $ifEmpty($('Loop Over Items').item.json['房客2'], $json['1020358']) }}\",\n  \"1020355\": \"{{ (!$json['性別'] || $json['性別'] === '') ? $('Loop Over Items').item.json['性別'] : $json['性別'] }}\",\n  \"1020360\": \"{{ (!$json.email || $json.email === \"\" || $json.email !== $('Loop Over Items').item.json.email) ? $('Loop Over Items').item.json.email : $json.email }}\",\n  \"1020361\": \"{{ (!$json['緊急連絡人姓名1'] || $json['緊急連絡人姓名1'] === '') ? $('Loop Over Items').item.json['緊急聯絡人'] : $json['緊急連絡人姓名1'] }}\",\n  \"1020362\": \"{{ (!$json['緊急連絡人姓名1'] || $json['緊急連絡人姓名1'] === '') ? $('Loop Over Items').item.json['緊急電話'] : $json['緊急連絡人電話1'] }}\",\n  \"1020363\": \"{{ (!$json['緊急連絡人姓名1'] || $json['緊急連絡人姓名1'] === '') ? $('Loop Over Items').item.json['緊急聯絡人關係'] : $json['緊急聯絡人關係1'] }}\",\n  \"1020365\": \"{{ ($json['緊急連絡人姓名1'] !== $('Loop Over Items').item.json['緊急聯絡人']) && (!$json['緊急連絡人姓名2'] || $json['緊急連絡人姓名2'] === '') ? $('Loop Over Items').item.json['緊急聯絡人'] : '' }}\",\n  \"1020366\": \"{{ ($json['緊急連絡人姓名1'] !== $('Loop Over Items').item.json['緊急聯絡人']) && (!$json['緊急連絡人姓名2'] || $json['緊急連絡人姓名2'] === '') ? $('Loop Over Items').item.json['緊急電話'] : '' }}\",\n  \"1020367\": \"{{ ($json['緊急連絡人姓名1'] !== $('Loop Over Items').item.json['緊急聯絡人']) && (!$json['緊急連絡人姓名2'] || $json['緊急連絡人姓名2'] === '') ? $('Loop Over Items').item.json['緊急聯絡人關係'] : '' }}\",\n  \"1020364\": \"{{ $('Loop Over Items').item.json['通訊地址'] }}\",\n  \"1020373\": \"{{ $('Loop Over Items').item.json['戶籍地址'] }}\",\n  \"1020368\": \"{{ $('Loop Over Items').item.json['身分證字號'] }}\",\n  \"1020576\": \"{{ $now }}\"\n}"
+      },
+      "type": "n8n-nodes-ragic.ragic",
+      "typeVersion": 1,
+      "position": [
+        -1536,
+        1088
+      ],
+      "id": "d9aa1a83-31a7-43ed-b6b3-c707e77a6126",
+      "name": "更新租客資訊",
+      "alwaysOutputData": true,
+      "notesInFlow": false,
+      "credentials": {
+        "ragicApi": {
+          "id": "LQmecGtg3MKWpEJf",
+          "name": "Ragic account 3"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "for-system-use/10"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// 1. 定義資料來源\nconst oldData = $node[\"格式化_降解\"].json; \nconst newData = $('Loop Over Items').item.json; \n\n// 2. 初始化更新物件\nlet updatePayload = {};\n\n/**\n * 輔助函數：比對差異\n * newValue: 來自 Loop 的新資料\n * oldFieldName: Ragic 舊資料的「中文標題」\n */\nconst addToPayload = (fieldId, newValue, oldFieldName) => {\n    const newVal = (newValue || \"\").toString().trim();\n    const oldVal = (oldData[oldFieldName] || \"\").toString().trim(); // 使用正確的中文名稱抓取舊值\n    \n    if (newVal !== \"\" && newVal !== oldVal) {\n        updatePayload[fieldId] = newVal;\n    }\n};\n\n/**\n * 輔助函數：補位判斷 (舊值為空才填入)\n */\nconst fillIfEmpty = (fieldId, newValue, oldFieldName) => {\n    const oldVal = (oldData[oldFieldName] || \"\").toString().trim();\n    if (oldVal === \"\") {\n        if (newValue) updatePayload[fieldId] = newValue;\n    }\n};\n\n// --- 開始比對邏輯 (嚴格對照你提供的表單) ---\n\n// [房客基本資訊]\naddToPayload(\"1020354\", newData['承租方'], '房客姓名1');\nfillIfEmpty(\"1020355\", newData['性別'], '性別');\naddToPayload(\"1020360\", newData['email'], 'email');\naddToPayload(\"1020358\", newData['房客2'], '房客姓名2');\n\n// [地址與證件] - 修正了你剛才提到的 1020364 抓取錯誤\naddToPayload(\"1020364\", newData['通訊地址'], '緊急聯絡人地址'); \naddToPayload(\"1020373\", newData['戶籍地址'], '戶籍地址');\naddToPayload(\"1020368\", newData['身分證字號'], '身分證字號');\n\n// [第一組緊急聯絡人] (補位邏輯：舊的姓名1為空才補)\nif (!(oldData['緊急連絡人姓名1']) || oldData['緊急連絡人姓名1'].trim() === \"\") {\n    if (newData['緊急聯絡人']) {\n        updatePayload[\"1020361\"] = newData['緊急聯絡人'];\n        updatePayload[\"1020362\"] = newData['緊急電話'];\n        updatePayload[\"1020363\"] = newData['緊急聯絡人關係'];\n    }\n}\n\n// [第二組緊急聯絡人] (溢位補位邏輯)\n// 條件：新聯絡人不同於舊姓名1 且 舊姓名2為空\nif (newData['緊急聯絡人'] !== oldData['緊急連絡人姓名1'] && (!oldData['緊急連絡人姓名2'] || oldData['緊急連絡人姓名2'].trim() === \"\")) {\n    updatePayload[\"1020365\"] = newData['緊急聯絡人'];\n    updatePayload[\"1020366\"] = newData['緊急電話'];\n    updatePayload[\"1020367\"] = newData['緊急聯絡人關係'];\n}\n\n// [副電話 1020357 補位邏輯]\n// 優先看房客2電話，沒有則看是否要補入主承租人電話\nif (newData['房客2電話']) {\n    addToPayload(\"1020357\", newData['房客2電話'], '連絡電話2');\n} else if (newData['主承租人電話'] !== oldData['連絡電話1'] && (!oldData['緊急連絡人姓名2'])) {\n    updatePayload[\"1020357\"] = newData['主承租人電話'];\n}\n\n// [系統更新日期]\nupdatePayload[\"1020576\"] = new Date().toISOString(); \n\n// 3. 輸出結果\nreturn {\n    ragicId: oldData._ragicId,\n    hasChanges: Object.keys(updatePayload).length > 1, // 扣除時間戳記後是否有變動\n    updatePayload: updatePayload\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1312,
+        1312
+      ],
+      "id": "9e6586ea-32f1-4db1-a927-d794e7b0abe4",
+      "name": "Code in JavaScript",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://ap13.ragic.com/OnePlaceLiving/for-system-use/2/{{ $json.ragicId }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "ragicApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.updatePayload }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        928,
+        1536
+      ],
+      "id": "21d9d62b-b2c9-422b-852d-e132cba1bfe7",
+      "name": "房客資料更新",
+      "credentials": {
+        "ragicApi": {
+          "id": "LQmecGtg3MKWpEJf",
+          "name": "Ragic account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4aa30508-8e03-45d8-82c6-5df656a777a0",
+              "leftValue": "={{ $('Loop Over Items').item.json[\"房客2\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        2112
+      ],
+      "id": "b76a63df-497a-4811-a69a-0062c725a87f",
+      "name": "是否為雙人租"
+    },
+    {
+      "parameters": {
+        "action": "createNewData",
+        "form": "OnePlaceLiving/for-system-use/2",
+        "jsonBody": "={\n  \"1007372\": \"{{ $('Loop Over Items').item.json['房客2電話'] ? $('Loop Over Items').item.json['房客2電話'] : $('Loop Over Items').item.json['主承租人電話'] }}\",\n  \"1007373\": \"{{ $('Loop Over Items').item.json['房客2'] }}\",\n  \"1007374\": \"{{ $('Loop Over Items').item.json['房客2身分證字號'] }}\",\n  \"1021727\": \"{{ $now }}\"\n}"
+      },
+      "type": "n8n-nodes-ragic.ragic",
+      "typeVersion": 1,
+      "position": [
+        704,
+        2112
+      ],
+      "id": "1d701faf-bfbf-47d1-8773-98b917b8f67f",
+      "name": "新增第二租客",
+      "credentials": {
+        "ragicApi": {
+          "id": "LQmecGtg3MKWpEJf",
+          "name": "Ragic account 3"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "\n    //聯絡電話1\n    //房客姓名1\n    //性別\n    //email\n    //緊急連絡人姓名1\n    //緊急連絡人電話1\n    //緊急連絡人地址\n    //戶籍地址\n    //身分證字號"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        928,
+        2016
+      ],
+      "id": "6af04fb3-e0c4-4f2e-99ab-150b8e2b715c",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "993c7f3c-ceb8-4644-9cd8-a1b0f45304e8",
+              "leftValue": "={{ $json.hasChanges }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        704,
+        1632
+      ],
+      "id": "78a83ec5-bba6-45f6-b66f-0e79b1f8a6c9",
+      "name": "是否有資料更新"
+    },
+    {
+      "parameters": {
+        "content": "## 租客身份Checking \n",
+        "height": 784,
+        "width": 1376
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        1488
+      ],
+      "id": "501d2684-34f7-48a6-9c41-28e80e05cfd8",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## 合約Checking ",
+        "height": 1040,
+        "width": 3088,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        1520
+      ],
+      "id": "93203309-3f7a-4126-8e59-2bc8dcc8b811",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## 異常資料登錄",
+        "height": 272,
+        "width": 576,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3712,
+        2288
+      ],
+      "id": "f975408c-8f5d-4ddb-87cd-3a6158873150",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "action": "updateExistedData",
+        "form": "OnePlaceLiving/for-system-use/2",
+        "recordIndex": "={{ $json.ragicId }}",
+        "jsonBody": "={\n  \"1021727\":\"{{$json.updatePayload[\"1021727\"]}}\"\n} "
+      },
+      "type": "n8n-nodes-ragic.ragic",
+      "typeVersion": 1,
+      "position": [
+        928,
+        1728
+      ],
+      "id": "3bcab01e-d6e6-4f26-8cf6-3a2c395d2ab5",
+      "name": "刷新租客表",
+      "credentials": {
+        "ragicApi": {
+          "id": "LQmecGtg3MKWpEJf",
+          "name": "Ragic account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// === 1. 格式化邏輯 (原：格式化_降解) ===\nconst rawInput = $input.item.json;\nlet oldData = {};\n\nif (rawInput.status && rawInput.data) {\n    oldData = rawInput.data;\n} else {\n    const key = Object.keys(rawInput)[0];\n    const inner = rawInput[key];\n    if (inner && typeof inner === 'object') {\n        oldData = inner;\n    } else {\n        throw new Error('❌ 無法辨識 Ragic 輸入格式');\n    }\n}\n\n// 💡 【核心修改：智慧提取原合約編號】\n// 1. 取得「確認合約版本」節點傳出的當前合約編號 (例如 A02501)\nconst currentContractInfo = Object.values($('確認合約版本').first().json)[0];\nconst targetContractId = currentContractInfo ? currentContractInfo[\"合約編號\"] : \"\";\n\n// 2. 取得子表格陣列\nconst subtable = oldData['_subtable_1007371'] || {};\nconst subtableEntries = Object.values(subtable); \n\nlet prevContractId = \"\";\n\nif (targetContractId && subtableEntries.length > 0) {\n    // 3. 在子表格中找到當前合約的索引位置\n    const currentIndex = subtableEntries.findIndex(entry => entry['合約編號'] === targetContractId);\n\n    // 4. 如果找到了且不是第一筆，則取前一筆的編號\n    if (currentIndex > 0) {\n        prevContractId = subtableEntries[currentIndex - 1]['合約編號'] || \"\";\n    }\n}\n\n// === 2. 取得新資料來源 ===\nconst newData = $('Loop Over Items').item.json; \n\n// === 3. 初始化更新物件 ===\nlet updatePayload = {};\n\n// 輔助函數：比對差異\nconst addToPayload = (fieldId, newValue, oldFieldName) => {\n    const newVal = (newValue || \"\").toString().trim();\n    const oldVal = (oldData[oldFieldName] || \"\").toString().trim();\n    if (newVal !== \"\" && newVal !== oldVal) {\n        updatePayload[fieldId] = newVal;\n    }\n};\n\n// 輔助函數：補位判斷\nconst fillIfEmpty = (fieldId, newValue, oldFieldName) => {\n    const oldVal = (oldData[oldFieldName] || \"\").toString().trim();\n    if (oldVal === \"\") {\n        if (newValue) updatePayload[fieldId] = (newValue || \"\").toString().trim();\n    }\n};\n\n// === 4. 開始執行比對 ===\n\n// [房客基本資訊]\naddToPayload(\"1007373\", newData['承租方'], '房客姓名1');\nfillIfEmpty(\"1007376\", newData['性別'], '性別');\naddToPayload(\"1007542\", newData['email'], 'email');\naddToPayload(\"1008188\", newData['房客2'], '房客姓名2');\n\n// [地址與證件]\naddToPayload(\"1013892\", newData['通訊地址'], '緊急聯絡人地址');\naddToPayload(\"1007378\", newData['戶籍地址'], '戶籍地址');\naddToPayload(\"1007374\", newData['身分證字號'], '身分證字號');\n\n// [第一組緊急聯絡人]\naddToPayload(\"1007379\", newData['緊急聯絡人'], '緊急連絡人姓名1');\naddToPayload(\"1007381\", newData['緊急電話'], '緊急連絡人電話1');\naddToPayload(\"1007380\", newData['緊急聯絡人關係'], '緊急聯絡人關係1');\n\n// [第二組緊急聯絡人]\nif (newData['緊急聯絡人'] !== oldData['緊急連絡人姓名1'] && (!oldData['緊急連絡人姓名2'] || oldData['緊急連絡人姓名2'].toString().trim() === \"\")) {\n    updatePayload[\"1008191\"] = newData['緊急聯絡人'];      \n    updatePayload[\"1008192\"] = newData['緊急電話'];        \n    updatePayload[\"1008193\"] = newData['緊急聯絡人關係'];  \n}\n\n// [副電話 1008189 補位]\nif (newData['房客2電話']) {\n    addToPayload(\"1008189\", newData['房客2電話'], '連絡電話2');\n} else if (newData['主承租人電話'] !== oldData['連絡電話1'] && (!oldData['緊急連絡人姓名2'])) {\n    updatePayload[\"1008189\"] = newData['主承租人電話'];\n}\n\n// [系統更新日期]\nconst now = new Date();\nconst twTime = new Date(now.getTime() + 8 * 60 * 60 * 1000)\n    .toISOString()\n    .replace('T', ' ')\n    .substring(0, 19);\n\nupdatePayload[\"1021727\"] = twTime;\n\n// === 5. 輸出結果 ===\nreturn {\n    ragicId: oldData._ragicId,\n    targetContractId: targetContractId, // 偵錯用：當前合約\n    prevContractId: prevContractId,     // 智慧提取出的前一個合約\n    hasChanges: Object.keys(updatePayload).length > 1, \n    updatePayload: updatePayload\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        1632
+      ],
+      "id": "35a76e7c-eed0-4239-a097-8ef111d9c02b",
+      "name": "差異比較_租客",
+      "retryOnFail": false,
+      "notesInFlow": true,
+      "onError": "continueRegularOutput",
+      "notes": "比較新進資料與原檔差異"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === 1. 解析 Ragic 原始輸入 (oldData) ===\nconst item = $input.item.json || {}; // 防止 $input 為空\nlet oldData = {};\nlet isNewlyCreated = false;\n\n// 💡 優化判斷邏輯：確保 item 存在且結構正確\nif (item.status === \"SUCCESS\" && item.data) {\n    // [新增成功路徑]\n    oldData = item.data;\n    isNewlyCreated = true;\n} else {\n    // [現有資料路徑] 取得第一個 Key 內部的物件\n    const keys = Object.keys(item);\n    if (keys.length > 0) {\n        // 排除 n8n 有時會帶入的屬性，確保抓到的是資料物件\n        const dataKey = keys.find(k => typeof item[k] === 'object' && item[k] !== null);\n        oldData = dataKey ? item[dataKey] : item[keys[0]];\n    }\n}\n\n// 💡 確保安全取得 ragicId\nconst ragicId = oldData ? oldData._ragicId : null;\n\n// === 2. 取得新資料來源 (newData) 與 跨節點變數 ===\n// 使用 optional chaining (?.) 防止節點未執行或資料缺失導致崩潰\nconst newData = $('Loop Over Items').first()?.json || {}; \nconst prevContractIdFromNode = $('差異比較_租客').first()?.json?.prevContractId || \"\";\n\n// === 3. 初始化輸出變數 ===\nlet updatePayload = {};\n\n/**\n * 輔助函數：標準化值 (處理日期格式或多選欄位)\n */\nconst normalize = (val) => {\n    if (val === null || val === undefined) return \"\";\n    if (Array.isArray(val)) return val.join(\",\").trim(); \n    return val.toString().trim().replace(/\\//g, '-'); \n};\n\n// === 4. 執行比對邏輯 (僅針對「已存在」的資料進行) ===\nif (!isNewlyCreated && oldData) {\n    \n    // --- 原合約編號 (1014734) ---\n    if (prevContractIdFromNode && prevContractIdFromNode.toString().trim() !== \"\") {\n        updatePayload[\"1014734\"] = prevContractIdFromNode.toString().trim();\n    }\n\n    // --- 租客手機1 (1007361) 強制比對 ---\n    const masterPhone = normalize(oldData['在此登打電話(必填)']);\n    const currentPhone1 = normalize(oldData['租客手機1']);\n\n    if (masterPhone !== \"\" && currentPhone1 !== masterPhone) {\n        updatePayload[\"1007361\"] = masterPhone;\n    }\n\n    // --- 規則 1: 不同就更新 ---\n    const newPayType = normalize(newData['繳費方式']);\n    const oldPayType = normalize(oldData['繳費方式']);\n    if (newPayType !== \"\" && newPayType !== oldPayType) {\n        updatePayload[\"1007366\"] = newData['繳費方式'];\n    }\n\n    const newEndDate = normalize(newData['到期日']);\n    const oldEndDate = normalize(oldData['合約到期日']);\n    if (newEndDate !== \"\" && newEndDate !== oldEndDate) {\n        updatePayload[\"1007368\"] = newData['到期日'];\n    }\n\n    // --- 規則 2: 舊的若為空才填 ---\n    const oldRoom = normalize(oldData['房間編號(可多選)']);\n    if (oldRoom === \"\" && newData['第__室']) {\n        updatePayload[\"1007552\"] = newData['第__室'].toString().trim();\n    }\n\n    const oldCaseId = normalize(oldData['案場編號(一定要有數字)']);\n    if (oldCaseId === \"\" && newData['案場編號']) {\n        updatePayload[\"1008219\"] = newData['案場編號'].toString().trim();\n    }\n}\n\n// === 5. 系統欄位與最終輸出 ===\nconst now = new Date();\nconst twTime = new Date(now.getTime() + 8 * 60 * 60 * 1000)\n    .toISOString()\n    .replace('T', ' ')\n    .substring(0, 19);\n\nupdatePayload[\"1019665\"] = twTime;\n\n// 判斷是否有「實質內容」更動\nconst hasRealChanges = Object.keys(updatePayload).length > 1;\n\nreturn {\n    ragicId: ragicId,\n    isNewlyCreated: isNewlyCreated, \n    hasChanges: isNewlyCreated ? false : hasRealChanges, \n    updatePayload: updatePayload\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2048,
+        1728
+      ],
+      "id": "98a0c5e5-b758-46f7-b69e-f614af3755ac",
+      "name": "合約資料梳理",
+      "retryOnFail": false,
+      "notesInFlow": false,
+      "onError": "continueRegularOutput",
+      "notes": "移除Ragic id"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "669aa08c-9c76-462f-939a-bd090bd0024d",
+              "leftValue": "={{ $json.isNewlyCreated }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "b2e95859-ceae-4885-b8ef-45a0194cd203",
+              "leftValue": "={{ $json.hasChanges }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2272,
+        1728
+      ],
+      "id": "8776f344-cffc-4fb9-bcea-75fcd46f97a7",
+      "name": "合約變更"
+    },
+    {
+      "parameters": {
+        "action": "updateExistedData",
+        "form": "OnePlaceLiving/for-system-use/10",
+        "recordIndex": "={{  $json.ragicId }}",
+        "jsonBody": "={\n  \"1014734\": \"{{ $('上一個合約').item.json.prevContractId ||\"\" }}\",\n  \"1019665\":\"{{ $now }}\"\n} "
+      },
+      "type": "n8n-nodes-ragic.ragic",
+      "typeVersion": 1,
+      "position": [
+        2496,
+        2016
+      ],
+      "id": "caf8b807-84bf-4f62-b37a-a6edd1eae311",
+      "name": "合約刷新",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "credentials": {
+        "ragicApi": {
+          "id": "LQmecGtg3MKWpEJf",
+          "name": "Ragic account 3"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "50ff90e1-0b91-4ac8-951a-675dda68449c",
+              "leftValue": "={{ $json[\"主承租人電話\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "9553e843-be99-42fc-947b-9d6a4510c77b",
+              "leftValue": "={{ $json[\"jgb合約id\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -864,
+        2400
+      ],
+      "id": "5abd259f-8f56-47e4-a2ec-b6f9b50876d6",
+      "name": "無資料"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://ap13.ragic.com/OnePlaceLiving/accounting-department/4/{{ $('合約資料梳理').item.json.ragicId }}?api&unlock' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "ragicApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "unlock"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        2944,
+        2112
+      ],
+      "id": "fd4cd225-e47b-4982-b33a-f3c1aba3034c",
+      "name": "Ragic Unlock",
+      "credentials": {
+        "ragicApi": {
+          "id": "LQmecGtg3MKWpEJf",
+          "name": "Ragic account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://ap13.ragic.com/OnePlaceLiving/accounting-department/4/{{ Object.values($('資料齊全').first().json)[0][\"_ragicId\"] }}?api&lock' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "ragicApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "lock"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        4304,
+        1792
+      ],
+      "id": "b5c558b2-e00d-4a54-a476-3678ab8d12a1",
+      "name": "Ragic lock",
+      "credentials": {
+        "ragicApi": {
+          "id": "LQmecGtg3MKWpEJf",
+          "name": "Ragic account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d4bcd074-db8c-4e6d-aab3-319779fda67d",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ERROR",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "616d95c7-2f52-4f2d-bc80-0460b18764b4",
+              "leftValue": "={{ $json.code }}",
+              "rightValue": 402,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2720,
+        2016
+      ],
+      "id": "8b78bb11-373a-4ed4-8b34-9b6691192e28",
+      "name": "上鎖了"
+    },
+    {
+      "parameters": {
+        "action": "updateExistedData",
+        "form": "OnePlaceLiving/for-system-use/10",
+        "recordIndex": "={{ $('合約資料梳理').item.json.ragicId }}",
+        "jsonBody": "={\n  \"1019665\":\"{{ $now }}\"\n} "
+      },
+      "type": "n8n-nodes-ragic.ragic",
+      "typeVersion": 1,
+      "position": [
+        3168,
+        2112
+      ],
+      "id": "1d04a0dd-d3bf-43dd-a860-43fcb89e523a",
+      "name": "合約時間刷新",
+      "credentials": {
+        "ragicApi": {
+          "id": "Jewpll33bsrNMCWE",
+          "name": "可信的api"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "form": "OnePlaceLiving/for-system-use/10",
+        "limit": 1,
+        "filters": {
+          "filter_map": [
+            {
+              "filters_field": "1007543",
+              "filters_value": "={{ $('Loop Over Items').item.json[\"jgb合約id\"] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-ragic.ragic",
+      "typeVersion": 1,
+      "position": [
+        3392,
+        1808
+      ],
+      "id": "9d8a6c72-c1c1-4446-9292-d5134ae12824",
+      "name": "JGBid double check",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "credentials": {
+        "ragicApi": {
+          "id": "LQmecGtg3MKWpEJf",
+          "name": "Ragic account 3"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "for-system-use/10"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://ap13.ragic.com/OnePlaceLiving/for-system-use/10/{{ $json.ragicId }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "ragicApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.updatePayload }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        3168,
+        1680
+      ],
+      "id": "0dc1cae7-b750-4bee-8b47-dc9be0eac27f",
+      "name": "合約資料更新",
+      "credentials": {
+        "ragicApi": {
+          "id": "LQmecGtg3MKWpEJf",
+          "name": "Ragic account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d57223c4-af1c-4cb6-aae1-f80d939336de",
+              "name": "prevContractId",
+              "value": "={{ $('差異比較_租客').item.json.prevContractId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1152,
+        1728
+      ],
+      "id": "19fe3a11-79ae-478f-8e7c-026e82e2793f",
+      "name": "上一個合約",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://ap13.ragic.com/OnePlaceLiving/for-system-use/10/{{ Object.values($('資料齊全').first().json)[0][\"_ragicId\"] }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "ragicApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"1019664\": \"Yes\"\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        3840,
+        1760
+      ],
+      "id": "bad80540-b8b3-4fa8-a74d-cb24b6e2c1e4",
+      "name": "結案打勾",
+      "credentials": {
+        "ragicApi": {
+          "id": "LQmecGtg3MKWpEJf",
+          "name": "Ragic account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c63b8e1f-27bf-45b0-8dbc-873624710f1a",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1088,
+        2832
+      ],
+      "id": "87884107-7410-43e6-ab69-5d61df49c393",
+      "name": "下載失敗"
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -416,
+        2912
+      ],
+      "id": "ab9d4975-df36-4e2e-a2ea-0d71baa6bb76",
+      "name": "Wait",
+      "webhookId": "53f6c7a0-1dee-43f6-880f-b0a2a760406c"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 讀取目前的重試次數，如果沒有就從 0 開始\nlet currentCount = $('Wait').context.retryCount || 0;\n\n// 次數 +1\ncurrentCount += 1;\n\n// 把次數存回環境變數裡，讓下一圈可以讀取\n$('Wait').context.retryCount = currentCount;\n\nreturn {\n  json: {\n    ...$input.item.json,\n    retryCount: currentCount\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -864,
+        2832
+      ],
+      "id": "32f3757c-987b-49a4-8eae-f66fe5ba23a3",
+      "name": "重試上限"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1345e74f-b70f-47f5-baf7-46f06cd67960",
+              "leftValue": "={{ $json.retryCount }}",
+              "rightValue": 3,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -640,
+        2832
+      ],
+      "id": "39d1c8ef-105b-4e2a-8096-abd8017700df",
+      "name": "重試次數"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://ap13.ragic.com/OnePlaceLiving/accounting-department/4/{{ Object.values($('資料齊全').first().json)[0][\"_ragicId\"] }}?api&lock' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "ragicApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "doFormula",
+              "value": "true"
+            },
+            {
+              "name": "doLinkLoad",
+              "value": "first"
+            },
+            {
+              "name": "doWorkflow",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        4080,
+        1792
+      ],
+      "id": "bda05d60-b2a0-43e6-8134-d2c1c7f6144b",
+      "name": "Ragic跑公式",
+      "credentials": {
+        "ragicApi": {
+          "id": "LQmecGtg3MKWpEJf",
+          "name": "Ragic account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "無資料",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "資料清洗": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "下載失敗",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "確認合約版本": {
+      "main": [
+        [
+          {
+            "node": "已更新至最新版本",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "房客姓名": {
+      "main": [
+        [
+          {
+            "node": "舊租客",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "已更新至最新版本": {
+      "main": [
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "姓名無異常",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "異常值",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "新增租客資料": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "舊租客": {
+      "main": [
+        [
+          {
+            "node": "差異比較_租客",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "是否為雙人租",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "新增租客資料",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "是否為雙人租",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "新增合約": {
+      "main": [
+        [
+          {
+            "node": "合約資料梳理",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "房客電話": {
+      "main": [
+        [
+          {
+            "node": "舊租客",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "新增異常區資訊": {
+      "main": [
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "資料清洗",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JGBid checking": {
+      "main": [
+        [
+          {
+            "node": "存在合約",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "存在合約": {
+      "main": [
+        [
+          {
+            "node": "合約資料梳理",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "新增合約",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "資料齊全": {
+      "main": [
+        [
+          {
+            "node": "結案打勾",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        []
+      ]
+    },
+    "姓名無異常": {
+      "main": [
+        [
+          {
+            "node": "房客姓名",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "房客電話",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "異常值": {
+      "main": [
+        [
+          {
+            "node": "新增異常區資訊",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "格式化_降解": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "更新租客資訊": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        []
+      ]
+    },
+    "房客資料更新": {
+      "main": [
+        [
+          {
+            "node": "上一個合約",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "是否為雙人租": {
+      "main": [
+        [
+          {
+            "node": "新增第二租客",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "新增第二租客": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "上一個合約",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "是否有資料更新": {
+      "main": [
+        [
+          {
+            "node": "房客資料更新",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "刷新租客表",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "刷新租客表": {
+      "main": [
+        [
+          {
+            "node": "上一個合約",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "差異比較_租客": {
+      "main": [
+        [
+          {
+            "node": "是否有資料更新",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "合約資料梳理": {
+      "main": [
+        [
+          {
+            "node": "合約變更",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "合約變更": {
+      "main": [
+        [
+          {
+            "node": "合約資料更新",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "合約刷新",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "合約刷新": {
+      "main": [
+        [
+          {
+            "node": "上鎖了",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "無資料": {
+      "main": [
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "確認合約版本",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ragic Unlock": {
+      "main": [
+        [
+          {
+            "node": "合約時間刷新",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "上鎖了": {
+      "main": [
+        [
+          {
+            "node": "Ragic Unlock",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "JGBid double check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "合約時間刷新": {
+      "main": [
+        [
+          {
+            "node": "JGBid double check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ragic lock": {
+      "main": [
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JGBid double check": {
+      "main": [
+        [
+          {
+            "node": "資料齊全",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "合約資料更新": {
+      "main": [
+        [
+          {
+            "node": "JGBid double check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "上一個合約": {
+      "main": [
+        [
+          {
+            "node": "JGBid checking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "結案打勾": {
+      "main": [
+        [
+          {
+            "node": "Ragic跑公式",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "下載失敗": {
+      "main": [
+        [
+          {
+            "node": "重試上限",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "重試上限": {
+      "main": [
+        [
+          {
+            "node": "重試次數",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "重試次數": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "資料清洗",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ragic跑公式": {
+      "main": [
+        [
+          {
+            "node": "Ragic lock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "09568265-9a5e-4a04-9835-334199615c99",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "38032bc584d369ebddc7595685a31fcef42a9c1fd3ee42100572bd437ccf2824"
+  },
+  "id": "CZ66MlrroPbf5UBF",
+  "tags": []
+}

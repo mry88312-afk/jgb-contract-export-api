@@ -1,0 +1,638 @@
+{
+  "name": "資料清洗",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "combinator": "or",
+          "conditions": [
+            {
+              "id": "f4f418aa-119a-427c-a5ea-bd8083b76923",
+              "leftValue": "={{ $json[\"合約更新日\"] }}",
+              "operator": {
+                "operation": "afterOrEquals",
+                "type": "dateTime"
+              },
+              "rightValue": "={{ $today.minus(2,'days') }}"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          }
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "alwaysOutputData": true,
+      "id": "b8d1c434-e3f8-4d2a-a0c7-156bb34eecd2",
+      "name": "數量調節",
+      "position": [
+        -1136,
+        1056
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "id",
+              "type": "any"
+            }
+          ]
+        }
+      },
+      "id": "90816004-7346-44b2-a202-bb1e0e9d7c92",
+      "name": "Start",
+      "position": [
+        -1808,
+        1056
+      ],
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "jsCode": "// ===== 工具函數 =====\n\n// 日期格式化函數（處理字串型日期）\nfunction formatStringDate(dateStr) {\n  if (!dateStr) return '';\n  const date = new Date(dateStr);\n  if (isNaN(date.getTime())) return dateStr;\n  const year = date.getFullYear();\n  const month = String(date.getMonth() + 1).padStart(2, '0');\n  const day = String(date.getDate()).padStart(2, '0');\n  return `${year}-${month}-${day}`;\n}\n\n// 電話格式化函數\nfunction formatPhone(phone) {\n  if (!phone) return '';\n  \n  let phoneStr = String(phone).trim();\n  let cleanPhone = phoneStr.replace(/[\\s\\-()]/g, '');\n  \n  if (cleanPhone.startsWith('+886')) {\n    cleanPhone = '0' + cleanPhone.substring(4);\n  } else if (/^9\\d{8}$/.test(cleanPhone)) {\n    cleanPhone = '0' + cleanPhone;\n  }\n  \n  return cleanPhone;\n}\n\n// 性別轉換\nfunction convertGender(gender) {\n  if (!gender) return '';\n  const genderStr = String(gender).toLowerCase().trim();\n  const genderMap = {\n    'mister': '男',\n    'mr': '男',\n    'male': '男',\n    'miss': '女',\n    'ms': '女',\n    'mrs': '女',\n    'female': '女'\n  };\n  return genderMap[genderStr] || gender;\n}\n\n// 簽約人清理（移除稱謂與空格）\nfunction cleanSignerName(name) {\n  if (!name) return '';\n  let cleaned = String(name).trim();\n  cleaned = cleaned.replace(/先生|小姐/g, ''); // 移除稱謂\n  cleaned = cleaned.replace(/\\s+/g, '');        // 移除所有空格\n  return cleaned;\n}\n\n// 💡 [新增] 智慧案名解析函數\nfunction parseProjectInfo(rawName, rawRoom) {\n  let name = String(rawName || \"\").trim();\n  let room = String(rawRoom || \"\").trim();\n\n  let searchKey = name;\n  let roomSuffix = \"\";\n\n  // 1. 剃除可能的前綴系統編號 (例 \"178博愛三路...\", \"273.至善路A\")\n  let prefixMatch = searchKey.match(/^(\\d+)[\\.\\s]*/);\n  if (prefixMatch) {\n      searchKey = searchKey.substring(prefixMatch[0].length).trim();\n  }\n\n  // 2. 處理結尾的英文房號 (例 \" B\", \"E\", \"Room C\", \"-D\")\n  let letterMatch = searchKey.match(/(?:\\s*Room\\s*|\\s*-\\s*|\\s+)?([A-Za-z])$/i);\n  if (letterMatch) {\n      roomSuffix = letterMatch[1].toUpperCase();\n      searchKey = searchKey.substring(0, searchKey.length - letterMatch[0].length).trim();\n  } \n  // 3. 處理結尾的純數字房號 (例 \"四川三街303\")\n  else {\n      let numberMatch = searchKey.match(/(\\d{3,4})$/);\n      if (numberMatch && searchKey.length > numberMatch[0].length) {\n          roomSuffix = numberMatch[1];\n          searchKey = searchKey.substring(0, searchKey.length - numberMatch[0].length).trim();\n      }\n  }\n\n  // 4. 雙重保險：如果案名拆不出房號，找原來的 `第__室`\n  if (!roomSuffix && room) {\n      let roomParts = room.split('-'); \n      roomSuffix = roomParts[roomParts.length - 1].trim(); \n  }\n\n  return {\n      searchKey: searchKey,\n      roomSuffix: roomSuffix\n  };\n}\n\n// ===== 主流程 =====\nconst outputItems = [];\n\nfor (let item of $input.all()) {\n  const newItem = { ...item };\n\n  // ===== 日期處理（只處理字串日期欄位） =====\n  const stringDateFields = ['起租日', '到期日', '簽約日'];\n  for (let field of stringDateFields) {\n    if (newItem.json[field]) {\n      newItem.json[field] = formatStringDate(newItem.json[field]);\n    }\n  }\n\n  // ===== 電話欄位格式化 =====\n  const phoneFields = ['電話', '緊急電話'];\n  for (let field of phoneFields) {\n    if (newItem.json[field]) {\n      newItem.json[field] = formatPhone(newItem.json[field]);\n    }\n  }\n\n  // ===== 性別轉換 =====\n  if (newItem.json['性別']) {\n    newItem.json['性別'] = convertGender(newItem.json['性別']);\n  }\n\n  // ===== 簽約人清理 =====\n  if (newItem.json['簽約人']) {\n    newItem.json['簽約人'] = cleanSignerName(newItem.json['簽約人']);\n  }\n\n  // 💡 [新增] 案名解析與變數賦值\n  const projectInfo = parseProjectInfo(newItem.json['案名'], newItem.json['第__室']);\n  newItem.json['解析_搜尋關鍵字'] = projectInfo.searchKey;\n  newItem.json['解析_房間尾碼'] = projectInfo.roomSuffix;\n\n  outputItems.push(newItem);\n}\n\n// ===== 返回輸出 =====\nreturn outputItems;"
+      },
+      "alwaysOutputData": true,
+      "id": "715e47e8-5bbd-4dd3-bccf-7274bab23c69",
+      "name": "調整資料格式",
+      "notesInFlow": true,
+      "position": [
+        -912,
+        1056
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "onError": "continueErrorOutput",
+      "notes": "電話格式、日期格式、性別、簽約人"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ===== 1. 工具函數模組 =====\n\nfunction countChineseChars(text) {\n  if (!text) return 0;\n  return (text.match(/[\\u4e00-\\u9fa5]/g) || []).length;\n}\n\nfunction getFinalSiteInfo(rawRoom, searchedSiteId, fullRoom) {\n  const room = String(rawRoom || \"\").trim();\n  const searchedId = String(searchedSiteId || \"\").trim();\n  if (room.includes('-')) {\n    const site = room.split('-')[0].trim();\n    return { site: site, room: room, abnormal: false, reason: '' };\n  }\n  if (searchedId !== \"\") {\n    return { site: searchedId, room: String(fullRoom || room), abnormal: false, reason: '' };\n  }\n  return { \n    site: '', room: room, abnormal: true, \n    reason: room === '' ? '第__室欄位不可為空' : '無法解析案場編號' \n  };\n}\n\nfunction formatInternationalPhone(phone) {\n  if (!phone) return \"\";\n  let p = String(phone).trim();\n  // 移除所有非數字字元，但保留可能存在的 + 號\n  let digits = p.replace(/[^\\d+]/g, '');\n  return digits;\n}\n\n/**\n * 💡 優化後的姓名處理：加入法人判定\n */\nfunction processName(name, isDualTenant, isTwId, isCorporate) {\n  if (!name) return { n1: \"\", n2: \"\", abnormal: false, splitAction: false };\n  let nameStr = String(name).trim();\n  const totalChinese = countChineseChars(nameStr);\n  const hasLetters = /[a-zA-Z]/.test(nameStr);\n\n  // 1. 法人判定：如果是法人，直接去除空格合併\n  if (isCorporate) {\n    return { n1: nameStr.replace(/\\s+/g, ''), n2: \"\", abnormal: false, splitAction: false };\n  }\n\n  // 2. 標準雙人判定\n  if (isDualTenant) {\n    const separators = ['/', '\\\\', '&', '、', '，', ','];\n    for (let sep of separators) {\n      if (nameStr.includes(sep)) {\n        let parts = nameStr.split(sep).map(n => n.trim()).filter(n => n);\n        return { n1: parts[0] || \"\", n2: parts[1] || \"\", abnormal: parts.length > 2, splitAction: true };\n      }\n    }\n    let parts = nameStr.split(/\\s+/).filter(p => p);\n    if (parts.length >= 2) return { n1: parts[0], n2: parts[1], abnormal: false, splitAction: true };\n  }\n\n  // 3. 隱性雙人偵測 (本國籍、單證件、純中文 > 4字)\n  if (!isDualTenant && isTwId && !hasLetters && totalChinese > 4) {\n    let parts = nameStr.split(/\\s+/).filter(p => p);\n    if (parts.length >= 2) {\n      return { n1: parts[0], n2: parts[1], abnormal: true, splitAction: true };\n    }\n    // 如果大於 8 個字且無空格，雖然是本國籍 ID 但極可能是法人誤植為個人 ID，標記異常\n    if (totalChinese > 8) return { n1: nameStr, n2: \"\", abnormal: true, splitAction: false };\n  }\n\n  // 4. 標準台灣姓名 (2-4 字)\n  if (!hasLetters && totalChinese >= 2 && totalChinese <= 4) {\n    return { n1: nameStr.replace(/\\s+/g, ''), n2: \"\", abnormal: false, splitAction: false };\n  }\n\n  return { n1: nameStr, n2: \"\", abnormal: false, splitAction: false };\n}\n\n// ===== 2. 主流程 =====\nconst outputItems = [];\nconst items = $input.all();\n\nconst relationStandard = {\n  '父母': ['父母', '父親', '母親', '爸爸', '媽媽', '父', '母', 'Father', 'Mother', 'Parent'],\n  '夫妻': ['夫妻', '配偶', '丈夫', '妻子', '老公', '老婆', '先生', '太太', '伴侶', '另一半', 'Spouse', 'Wife', 'Husband'],\n  '兄弟姊妹': ['兄弟姊妹', '兄弟姐妹', '兄弟', '兄妹', '姊妹', '姊弟', '姐妹', '姐弟', '哥哥', '弟弟', 'Sister', 'Brother', 'Sibling'],\n  '其他親戚': ['親戚', '叔叔', '阿姨', '舅舅', '姑姑', '兒子', '女兒', 'Relative', 'Son', 'Daughter']\n};\n\nfor (let i = 0; i < items.length; i++) {\n  const inputJson = items[i].json;\n  const json = {}; \n  const remarks = [];\n  \n  const rawName = String(inputJson['姓名'] || inputJson['承租方'] || \"\");\n  const rawId = String(inputJson['身分證字號'] || \"\").trim().toUpperCase();\n  const rawPhone = String(inputJson['電話'] || \"\");\n  const rawRel = String(inputJson['緊急聯絡人關係'] || \"\").trim();\n  const rawRoom = String(inputJson['第__室'] || \"\");\n  const searchedSiteId = inputJson['案場編號']; \n  const fullRoom = inputJson['完整房號'];\n\n  // 1. 判定身分性質\n  let isTwId = /^[A-Z][12]\\d{8}$/.test(rawId);\n  let isCorporate = /^\\d{8}$/.test(rawId); // 💡 8位純數字判定為法人\n\n  // 2. 案場處理\n  const siteRes = getFinalSiteInfo(rawRoom, searchedSiteId, fullRoom);\n  json['案場編號'] = siteRes.site;\n  json['第__室'] = siteRes.room;\n  if (siteRes.abnormal) remarks.push(siteRes.reason);\n\n  // 3. 雙人基礎判定\n  let isDualId = rawId.includes('/');\n  let isDualPhone = rawPhone.includes('.');\n  let isDualTenant = isDualId || rawName.includes('/') || rawName.includes('、') || isDualPhone;\n\n  // 4. 姓名處理\n  const nameRes = processName(rawName, isDualTenant, isTwId, isCorporate);\n  json['姓名1'] = nameRes.n1;\n  json['姓名2'] = nameRes.n2;\n  json['姓名異常'] = nameRes.abnormal;\n\n  // 5. 電話長度校驗 (台灣手機 10 位, 市話 9-10 位)\n  let cleanPhone = rawPhone.replace(/\\D/g, '');\n  if (cleanPhone.length > 10) {\n    remarks.push(\"電話長度異常\");\n  }\n\n  // 6. 關係處理\n  json['關係格式不符'] = true;\n  json['緊急聯絡人關係'] = '待修正';\n  for (const [stdKey, variants] of Object.entries(relationStandard)) {\n    if (variants.some(v => rawRel.toLowerCase().includes(v.toLowerCase()))) {\n      json['緊急聯絡人關係'] = stdKey;\n      json['關係格式不符'] = (rawRel !== stdKey);\n      break;\n    }\n  }\n  if (json['緊急聯絡人關係'] === '待修正') {\n    remarks.push(\"緊急聯絡人資料不符標準輸入格式\");\n  }\n\n  // 7. 原始資料備份\n  json['身分證字號1'] = rawId;\n  json['身分證字號2'] = \"\";\n  json['原始姓名資料'] = rawName;\n  json['關係人原始值'] = rawRel;\n  json['原始電話值'] = rawPhone;\n  json['原始房號'] = rawRoom;\n\n  // 8. 地址分配\n  json['緊急聯絡人地址1'] = \"\"; json['緊急聯絡人地址2'] = \"\";\n  json['房客戶籍地址'] = inputJson['戶籍地址'] || \"\";\n  json['房客通訊地址'] = inputJson['通訊地址'] || \"\";\n\n  json['電話1'] = formatInternationalPhone(rawPhone);\n  json['電話2'] = \"\";\n\n  // 9. 最終判定：只要有備註(含電話長度、關係不符)或案場異常，總體異常即為 true\n  json['異常'] = json['姓名異常'] || siteRes.abnormal || remarks.length > 0;\n  json['備註'] = remarks.join('，');\n  \n  outputItems.push({ json, pairedItem: i });\n}\n\nreturn outputItems;"
+      },
+      "alwaysOutputData": true,
+      "id": "a5ce6c3f-8584-4c66-b59d-7ed455513de2",
+      "name": "異常值判斷",
+      "notesInFlow": true,
+      "position": [
+        208,
+        1056
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "onError": "continueErrorOutput",
+      "notes": "案場編號、緊急聯絡人家關係、姓名與身分證字號異常"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "12656480-6e50-4a83-9978-b13357c9c712",
+              "name": "主承租人電話",
+              "type": "string",
+              "value": "={{ $('異常值判斷').item.json[\"電話1\"] }}"
+            },
+            {
+              "id": "ddff3849-24f0-4f4b-a277-ed6168167ddb",
+              "name": "承租方",
+              "type": "string",
+              "value": "={{ $('異常值判斷').item.json[\"姓名1\"] }}"
+            },
+            {
+              "id": "cde80759-e24b-4275-a8c1-0d30a49461fc",
+              "name": "jgb合約id",
+              "type": "number",
+              "value": "={{ $('數量調節').item.json[\"jgb合約id\"] }}"
+            },
+            {
+              "id": "413dd738-3975-4512-a05d-e40e24a38002",
+              "name": "第__室",
+              "type": "string",
+              "value": "={{ $('異常值判斷').item.json['第__室'].replace(/^0+/, '')||$('調整資料格式').item.json['第__室'].replace(/^0+/, '')|| \"\" }}"
+            },
+            {
+              "id": "cef9e705-795e-4d23-8d86-23b7236532c6",
+              "name": "身分證字號",
+              "type": "string",
+              "value": "={{ $json[\"身分證字號1\"]}}"
+            },
+            {
+              "id": "a62115b6-ba7c-4f85-9d62-888c33f5c5c4",
+              "name": "性別",
+              "type": "string",
+              "value": "={{ $('調整資料格式').item.json[\"性別\"] }}"
+            },
+            {
+              "id": "d4ecee9c-03b2-48a8-8002-295e144b4b45",
+              "name": "租金",
+              "type": "number",
+              "value": "={{ $('數量調節').item.json['租金'] }}"
+            },
+            {
+              "id": "f33976e0-7a73-4a88-b447-bf9e6ebd16c8",
+              "name": "押金",
+              "type": "number",
+              "value": "={{ $('數量調節').item.json['押金'] }}"
+            },
+            {
+              "id": "c9bbbc31-1ec1-4477-a514-7d445e69d82d",
+              "name": "繳交方式",
+              "type": "string",
+              "value": "={{ $('調整資料格式').item.json['繳費周期'] }}"
+            },
+            {
+              "id": "c10b8920-05a4-4268-add3-474faa4c3e70",
+              "name": "email",
+              "type": "string",
+              "value": "={{ $('數量調節').item.json.email}}"
+            },
+            {
+              "id": "f55c4ac8-f2a0-445c-9d16-e0d08f97a039",
+              "name": "案名",
+              "type": "string",
+              "value": "={{ $('數量調節').item.json[\"案名\"] }}"
+            },
+            {
+              "id": "d78bd86d-ab2b-4d30-b7f2-c798e737662a",
+              "name": "來源案場編號",
+              "type": "string",
+              "value": "={{ $json[\"案場編號\"]||$('異常值判斷').item.json['案場編號']||\"\" }}"
+            },
+            {
+              "id": "a3aa7d8e-cdcf-45da-aa21-9ec84070c2a7",
+              "name": "租賃面積",
+              "type": "number",
+              "value": "={{ $('數量調節').item.json['租賃面積'] }}"
+            },
+            {
+              "id": "e7e4bfd5-d01e-48db-a19d-35452ab56336",
+              "name": "簽約人",
+              "type": "string",
+              "value": "={{ $('調整資料格式').item.json['簽約人'].replaceAll('先生', '').replaceAll('小姐', '').replaceAll(' ', '') }}"
+            },
+            {
+              "id": "bb721a9a-ec85-4f59-a4de-47c612c8df87",
+              "name": "戶籍地址",
+              "type": "string",
+              "value": "={{ $('數量調節').item.json['戶籍地址']}}"
+            },
+            {
+              "id": "5b8bb196-5f2c-47a7-8563-4e4970da4732",
+              "name": "通訊地址",
+              "type": "string",
+              "value": "={{ $('數量調節').item.json['通訊地址'] }}"
+            },
+            {
+              "id": "5d16bd7f-36cc-48d8-9d00-1ff83351cb95",
+              "name": "=起租日",
+              "type": "string",
+              "value": "={{ $('調整資料格式').item.json['起租日'] }}"
+            },
+            {
+              "id": "f78009f5-acae-4b19-a368-5462f7dd6a5a",
+              "name": "到期日",
+              "type": "string",
+              "value": "={{ $('調整資料格式').item.json['到期日'] }}"
+            },
+            {
+              "id": "221edffc-9b97-49e7-89d7-11b229a097c3",
+              "name": "簽約日",
+              "type": "string",
+              "value": "={{ $('調整資料格式').item.json['簽約日'] }}"
+            },
+            {
+              "id": "3f67410d-2778-406f-a68d-30d5b5ceb81e",
+              "name": "緊急聯絡人",
+              "type": "string",
+              "value": "={{ $('數量調節').item.json['緊急聯絡人'] }}"
+            },
+            {
+              "id": "629cfc2a-4cb8-4ea4-bbce-3549c07146e2",
+              "name": "緊急聯絡人關係",
+              "type": "string",
+              "value": "={{ $json['緊急聯絡人關係'] }}"
+            },
+            {
+              "id": "c9e3f374-ab8a-43a2-8ccb-c62ac9ff8148",
+              "name": "緊急電話",
+              "type": "string",
+              "value": "={{ $('調整資料格式').item.json['緊急電話'] }}"
+            },
+            {
+              "id": "03c143d5-c91c-49bc-9b46-e860a106fc2a",
+              "name": "房客2",
+              "type": "string",
+              "value": "={{ $json[\"姓名2\"] }}"
+            },
+            {
+              "id": "35c5f1e1-0337-4692-aed2-fe13a7d3dd45",
+              "name": "房客2電話",
+              "type": "string",
+              "value": "={{ $('異常值判斷').item.json[\"電話2\"] }}"
+            },
+            {
+              "id": "7f0a0f56-a41c-47fc-a13c-3b54a77276e9",
+              "name": "房客2身分證字號",
+              "type": "string",
+              "value": "={{ $('異常值判斷').item.json[\"身分證字號2\"] }}"
+            },
+            {
+              "id": "279a56dd-6a32-4863-8263-9c409b68b99c",
+              "name": "合約更新日",
+              "type": "string",
+              "value": "={{ $('調整資料格式').item.json['合約更新日'] }}"
+            },
+            {
+              "id": "5fffa38b-9f7c-4cbc-b85e-b4f1050fe8a2",
+              "name": "異常",
+              "type": "boolean",
+              "value": "={{ $('異常值判斷').item.json[\"異常\"] }}"
+            },
+            {
+              "id": "0f7d93d8-e75e-4a2b-9d24-b2628535cfc8",
+              "name": "原始電話值",
+              "type": "string",
+              "value": "={{ $('數量調節').item.json[\"電話\"]}}"
+            },
+            {
+              "id": "0002b914-2dec-4888-9115-e1086486af6c",
+              "name": "姓名異常",
+              "type": "boolean",
+              "value": "={{ $('異常值判斷').item.json['姓名異常'] }}"
+            },
+            {
+              "id": "42375f75-3e6a-411f-8f46-a9344e6474e0",
+              "name": "原始姓名資料",
+              "type": "string",
+              "value": "={{ $('異常值判斷').item.json[\"原始姓名資料\"] }}"
+            },
+            {
+              "id": "9ded8b7e-8efd-4641-af4b-ed76624b2671",
+              "name": "關係格式不符",
+              "type": "boolean",
+              "value": "={{ $('異常值判斷').item.json[\"關係格式不符\"] }}"
+            },
+            {
+              "id": "cf08e01d-8ee7-42ae-9631-78696ed396f2",
+              "name": "關係人原始值",
+              "type": "string",
+              "value": "={{ $('數量調節').item.json['緊急聯絡人關係'] }}"
+            },
+            {
+              "id": "6774f8bd-2dcf-414b-8c5b-12a549772a3f",
+              "name": "備註",
+              "type": "string",
+              "value": "={{ $('異常值判斷').item.json[\"備註\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "alwaysOutputData": true,
+      "id": "81b5effa-30eb-475c-8203-eb03adb0d11b",
+      "name": "輸出變數",
+      "position": [
+        432,
+        1056
+      ],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://oneplace-jgb-contracts.zeabur.app/api/export-contracts",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "contract_type",
+              "value": "執行中合約"
+            },
+            {
+              "name": "contract_updated_days",
+              "value": "3"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 1000000
+        }
+      },
+      "executeOnce": false,
+      "id": "475f5392-dff0-4fa6-9291-efacd705ddad",
+      "maxTries": 5,
+      "name": "Call FastAPI of JGB",
+      "notesInFlow": true,
+      "position": [
+        -1584,
+        1056
+      ],
+      "retryOnFail": true,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "waitBetweenTries": 5000,
+      "disabled": true,
+      "onError": "continueRegularOutput",
+      "notes": "py on Zeabur"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {
+          "headerRow": true
+        }
+      },
+      "id": "e18b0f22-aefd-4274-9793-447df9cdca26",
+      "name": "抓取合約",
+      "position": [
+        -1360,
+        1056
+      ],
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "combinator": "or",
+          "conditions": [
+            {
+              "id": "7697277b-cf45-4406-8a4d-8892551e95fd",
+              "leftValue": "={{ $json[\"第__室\"] }}",
+              "operator": {
+                "operation": "empty",
+                "singleValue": true,
+                "type": "string"
+              },
+              "rightValue": ""
+            },
+            {
+              "id": "740dc9d9-89a1-4eb3-9757-76a4cb244206",
+              "leftValue": "={{ $json[\"第__室\"] }}",
+              "operator": {
+                "operation": "notContains",
+                "type": "string"
+              },
+              "rightValue": "-"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          }
+        },
+        "options": {}
+      },
+      "id": "b3cba023-331d-498a-a582-85d8bba8ad9a",
+      "name": "If",
+      "position": [
+        -688,
+        1056
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "url": "=https://ap13.ragic.com/OnePlaceLiving/for-system-use/1?fts={{$json.解析_搜尋關鍵字}}&api",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "ragicApi",
+        "options": {}
+      },
+      "alwaysOutputData": true,
+      "id": "4d50b529-e4fb-4a1c-9bad-374cd885ce64",
+      "name": "案場查詢",
+      "position": [
+        -464,
+        976
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "credentials": {
+        "ragicApi": {
+          "id": "LQmecGtg3MKWpEJf",
+          "name": "Ragic account 3"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n// 🌟 1. 抓回前一個節點 (假設叫 'If') 的原始資料\n// 請確認括號內的名稱與您畫布上 IF 節點的名稱完全一致\nconst originalItems = $('If').all(); \n\nfor (let i = 0; i < items.length; i++) {\n    let siteId = \"\";\n    let ragicData = items[i].json; \n    \n    // 🌟 2. 智慧提取案場編號 (處理 Ragic 特有的 Key 結構)\n    let keys = Object.keys(ragicData);\n    if (keys.length > 0) {\n        // 抓取第一個 Key (即 ragicId) 內部的案場編號\n        let firstKey = keys[i % keys.length]; // 修正：如果 HTTP 回傳多筆則對應，若只有一筆則用 keys[0]\n        // 安全做法通常是 keys[0]，因為我們是一筆一筆過來的\n        siteId = ragicData[keys[0]] ? ragicData[keys[0]][\"案場編號\"] : \"\";\n    }\n    \n    // 🌟 3. 抓取對應的原始資料 (含 解析_房間尾碼)\n    let originalData = JSON.parse(JSON.stringify(originalItems[i].json));\n    let suffix = originalData[\"解析_房間尾碼\"] || \"\";\n    \n    // 🌟 4. 執行組合邏輯\n    // 如果 siteId 為空 (搜尋失敗)，完整房號就輸出空值\n    // 如果有 siteId，則組合成 ID-Suffix 格式\n    let fullRoomId = \"\";\n    if (siteId && siteId.trim() !== \"\") {\n        fullRoomId = siteId + \"-\" + suffix;\n    }\n    \n    // 🌟 5. 將結果寫入原始資料中\n    originalData[\"案場編號\"] = siteId;\n    originalData[\"完整房號\"] = fullRoomId;\n    \n    // 更新輸出\n    items[i].json = originalData;\n}\n\nreturn items;"
+      },
+      "id": "cb988be2-d075-487f-bd04-4f57b40d34b2",
+      "name": "解析案場編號",
+      "position": [
+        -240,
+        976
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {},
+      "id": "8a7d1545-cbb1-4d07-9071-db04c3742157",
+      "name": "Merge",
+      "position": [
+        -16,
+        1056
+      ],
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://jgb-api-v2.zeabur.app/api/export-contracts",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "contract_type",
+              "value": "執行中合約"
+            },
+            {
+              "name": "contract_updated_days",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 1000000
+        }
+      },
+      "executeOnce": false,
+      "id": "81e4ae32-be43-42e8-925a-4ba461b6c075",
+      "maxTries": 5,
+      "name": "Call FastAPI of JGB V3",
+      "notesInFlow": true,
+      "position": [
+        -1584,
+        1264
+      ],
+      "retryOnFail": true,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput",
+      "notes": "py on Zeabur"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Call FastAPI of JGB": {
+      "main": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "案場查詢",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 1,
+            "node": "Merge",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "異常值判斷",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Call FastAPI of JGB V3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "抓取合約": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "數量調節",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "數量調節": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "調整資料格式",
+            "type": "main"
+          }
+        ],
+        []
+      ]
+    },
+    "案場查詢": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "解析案場編號",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "異常值判斷": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "輸出變數",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "解析案場編號": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Merge",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "調整資料格式": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "If",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "輸出變數": {
+      "main": [
+        []
+      ]
+    },
+    "Call FastAPI of JGB V3": {
+      "main": [
+        [
+          {
+            "node": "抓取合約",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "1c26c260-8d88-4d41-b37b-0d8c375d2947",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "38032bc584d369ebddc7595685a31fcef42a9c1fd3ee42100572bd437ccf2824"
+  },
+  "id": "Wn9lyjPzL4Zupkek",
+  "tags": []
+}

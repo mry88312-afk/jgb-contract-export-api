@@ -1,0 +1,116 @@
+{
+  "name": "下載jgb合約_可信",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        -48
+      ],
+      "id": "10bc4873-08eb-482c-a7cc-6c71bf668970",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://jgbcontractkehsin.zeabur.app/api/export-contracts",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "start_date",
+              "value": "2026/03/25"
+            },
+            {
+              "name": "end_date",
+              "value": "2026/03/26"
+            },
+            {
+              "name": "date_type",
+              "value": "finish_sign"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -224,
+        -48
+      ],
+      "id": "e119c72a-c1eb-48b6-b9ac-765b29f4c202",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.data.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Name",
+              "value": "User-Agent"
+            },
+            {
+              "name": "Value",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        48,
+        -48
+      ],
+      "id": "e41a00fd-c210-49a6-978e-42ba49de1bf3",
+      "name": "HTTP Request2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e0d65fac-3efa-434f-aba8-9d7ce782cadb",
+  "meta": {
+    "instanceId": "38032bc584d369ebddc7595685a31fcef42a9c1fd3ee42100572bd437ccf2824"
+  },
+  "id": "3HMpIFtIBED5IWKN",
+  "tags": []
+}
