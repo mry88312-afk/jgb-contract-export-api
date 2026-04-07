@@ -20,8 +20,8 @@ BASE_URL = 'https://www.jgbsmart.com'
 LOGIN_PAGE_URL = f'{BASE_URL}/users/login'
 LOGIN_API_URL = f'{BASE_URL}/api2/login/emailLogin'
 BILLS_EXPORT_API_URL = f'{BASE_URL}/api3/bills/export'
-BATCH_CODE_API_URL = f'{BASE_URL}/api2/getBatchCode'
-BATCH_STATUS_API_URL = f'{BASE_URL}/api2/getBatchStatus'
+BATCH_CODE_API_URL = f'{BASE_URL}/api1/getBatchCode'
+BATCH_STATUS_API_URL = f'{BASE_URL}/api1/getBatchStatus'
 
 CREDENTIALS = {
     'email': os.getenv("JGB_EMAIL", "mis@oneplace.com.tw"),
@@ -181,6 +181,7 @@ def export_bills(request: ExportRequest):
         export_payload[f'ext[billIds][{i}]'] = str(bill_id)
 
     try:
+        print(f"   [Debug] 準備發送至: {BATCH_CODE_API_URL}")
         response_batch = session.post(BATCH_CODE_API_URL, data=export_payload)
         response_data = response_batch.json()
 
@@ -307,6 +308,7 @@ def export_contracts(request: ExportContractRequest):
     }
 
     try:
+        print(f"   [Debug] 準備發送至 API: {BATCH_CODE_API_URL}")
         response_batch = session.post(BATCH_CODE_API_URL, data=export_payload)
         response_data = response_batch.json()
 
