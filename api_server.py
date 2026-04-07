@@ -20,8 +20,8 @@ BASE_URL = 'https://www.jgbsmart.com'
 LOGIN_PAGE_URL = f'{BASE_URL}/users/login'
 LOGIN_API_URL = f'{BASE_URL}/api2/login/emailLogin'
 BILLS_EXPORT_API_URL = f'{BASE_URL}/api3/bills/export'
-BATCH_CODE_API_URL = f'{BASE_URL}/api1/getBatchCode'
-BATCH_STATUS_API_URL = f'{BASE_URL}/api1/getBatchStatus'
+BATCH_CODE_API_URL = f'{BASE_URL}/api2/getBatchCode'
+BATCH_STATUS_API_URL = f'{BASE_URL}/api2/getBatchStatus'
 
 CREDENTIALS = {
     'email': os.getenv("JGB_EMAIL", "mis@oneplace.com.tw"),
