@@ -310,14 +310,23 @@ def export_contracts(request: ExportContractRequest):
     try:
         print(f"   [Debug] 準備發送至 API: {BATCH_CODE_API_URL}")
         response_batch = session.post(BATCH_CODE_API_URL, data=export_payload)
-        response_data = response_batch.json()
+        
+        try:
+            response_data = response_batch.json()
+        except Exception as e:
+            print(f"   [Error] 回傳的不是 JSON 格式: {response_batch.text[:500]}")
+            raise HTTPException(status_code=500, detail=f"JGB 伺服器回傳格式錯誤 (可能不支援 api1): {response_batch.text[:200]}")
 
         if response_data.get('success'):
             batch_code = response_data['data']['batch_code']
             print(f"   batch_code: {batch_code}")
         else:
+            print(f"   [Error] 取得 batch_code 失敗: {response_data}")
             raise HTTPException(status_code=500, detail=f"取得 batch_code 失敗: {response_data}")
+    except HTTPException:
+        raise
     except Exception as e:
+        print(f"   [Error] 呼叫 API 發生異常: {str(e)}")
         raise HTTPException(status_code=500, detail=f"批次匯出錯誤: {str(e)}")
 
     # --- 步驟 4：輪詢狀態 ---
